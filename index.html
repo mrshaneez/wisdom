@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Little Wisdom — life tips to share</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f1ea; --ink:#1f1b16; --muted:#6f665c; --line:#e3d9cc; --card:#fffdf9;
+    --accent:#e2633f; --accent-ink:#fff;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#16130f; --ink:#f3ece3; --muted:#a89d90; --line:#2e2822; --card:#1f1b17; }
+  }
+  *{box-sizing:border-box}
+  html,body{overflow-x:hidden;overscroll-behavior-x:none}
+  .stage canvas{touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:grab;will-change:transform}
+  .swipehint{text-align:center;color:var(--muted);font-size:12.5px;margin:-4px 0 8px}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"DM Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  main{max-width:520px;margin:0 auto;padding:20px 16px 48px}
+  header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px}
+  h1{font-family:"Fraunces",serif;font-weight:700;font-size:28px;margin:0;letter-spacing:-.01em}
+  h1 span{color:var(--accent)}
+  .sub{color:var(--muted);font-size:14px;margin:2px 0 0}
+  .chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0 10px;scrollbar-width:none;margin:0 -16px;padding-left:16px;padding-right:16px}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 14px;font:500 14px "DM Sans",sans-serif;cursor:pointer;white-space:nowrap}
+  .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .stage{position:relative;margin:6px 0 14px;border-radius:22px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  canvas{display:block;width:100%;height:auto;aspect-ratio:4/5}
+  .loading{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.35);color:#fff;font-weight:500;backdrop-filter:blur(2px)}
+  .loading.on{display:flex}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  button.btn{border:0;border-radius:14px;padding:14px 12px;font:600 15px "DM Sans",sans-serif;cursor:pointer;background:var(--card);color:var(--ink);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;gap:8px}
+  button.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+  button.btn:disabled{opacity:.5;cursor:default}
+  button.btn:active{transform:scale(.98)}
+  .full{grid-column:1/-1}
+  .styles{display:flex;gap:10px;margin:14px 0 4px;justify-content:center}
+  .sw{width:34px;height:34px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;outline-offset:2px}
+  .sw[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--bg) inset}
+  .ask{margin-top:22px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px}
+  .ask h2{font-family:"Fraunces",serif;font-size:19px;margin:0 0 4px}
+  .ask p{margin:0 0 10px;color:var(--muted);font-size:14px}
+  textarea{width:100%;min-height:76px;resize:vertical;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:12px;font:16px "DM Sans",sans-serif}
+  .ask .btn{width:100%;margin-top:10px}
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;max-width:90vw;text-align:center}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .hint{color:var(--muted);font-size:12.5px;text-align:center;margin-top:10px}
+  .hidden{display:none!important}
+  .namebox{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px 6px 6px 14px;margin:4px 0 6px}
+  .namebox span{font-size:13px;color:var(--muted);white-space:nowrap}
+  .namebox input{flex:1;min-width:0;border:0;background:var(--bg);color:var(--ink);border-radius:10px;padding:10px 12px;font:600 16px "DM Sans",sans-serif}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>Little <span>Wisdom</span></h1>
+      <p class="sub">Life tips as pictures. Make one, send it to a friend.</p>
+    </div>
+  </header>
+
+  <div class="chips" id="chips" role="group" aria-label="Topic"></div>
+
+  <div class="stage">
+    <canvas id="cv" width="1080" height="1350" aria-label="Tip card"></canvas>
+    <div class="loading" id="loading">Thinking of something good…</div>
+  </div>
+
+  <p class="swipehint">← Swipe for the next card · swipe back to go back →</p>
+
+  <label class="namebox">
+    <span>Your name on every card</span>
+    <input id="nameInput" type="text" maxlength="28" placeholder="Type your name" autocomplete="name">
+  </label>
+
+  <div class="styles" id="styles" role="group" aria-label="Card style"></div>
+
+  <div class="row" style="margin-top:12px">
+    <button class="btn primary full" id="newBtn">✨ New tip</button>
+    <button class="btn" id="saveBtn">🖼️ Save picture</button>
+    <button class="btn" id="videoBtn">🎬 Save video</button>
+    <button class="btn full" id="copyBtn">📋 Copy text</button>
+  </div>
+  <p class="hint" id="shareHint">“Save video” makes a 5-second animated card — great for WhatsApp status or Instagram stories. On your phone, saving opens the share sheet.</p>
+
+  <section class="ask hidden" id="ask">
+    <h2>Make a card for your situation</h2>
+    <p>Tell it what's on your mind — you'll get advice, a life lesson or a motivational line made just for you.</p>
+    <textarea id="situation" maxlength="400" placeholder="e.g. I keep putting off going to the gym, or my friend and I had a fight…"></textarea>
+    <button class="btn primary" id="askBtn">💡 Get my advice card</button>
+  </section>
+</main>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const TOPICS = [
+  {id:"all", label:"🌈 Surprise me"},
+  {id:"lessons", label:"📜 Life lessons", emoji:"📜"},
+  {id:"motivation", label:"🔥 Motivation", emoji:"🔥"},
+  {id:"mindset", label:"🧠 Mindset", emoji:"🧠"},
+  {id:"happiness", label:"☀️ Happiness", emoji:"☀️"},
+  {id:"health", label:"💪 Health", emoji:"💪"},
+  {id:"money", label:"💰 Money", emoji:"💰"},
+  {id:"friends", label:"🤝 Friends & love", emoji:"🤝"},
+  {id:"work", label:"🚀 Work & goals", emoji:"🚀"},
+  {id:"confidence", label:"🦁 Confidence", emoji:"🦁"},
+];
+
+// Quote entries: [quote, reflection, author]
+const TIPS = {
+  lessons:[
+    ["The journey of a thousand miles begins with a single step.","Stop waiting for the whole path to be clear. Just take the next step today.","Lao Tzu"],
+    ["We suffer more often in imagination than in reality.","Most of what you're worried about will never happen. Deal with today, not the what-ifs.","Seneca"],
+    ["You have power over your mind, not outside events.","Realise this, and you will find strength. Focus on what you control and let the rest go.","Marcus Aurelius"],
+    ["It does not matter how slowly you go, as long as you do not stop.","Slow progress is still progress. Keep showing up.","Confucius"],
+    ["People forget what you said. They remember how you made them feel.","Kindness lasts longer than being right. Leave people better than you found them."],
+    ["Not everyone who leaves was meant to stay.","Some people are lessons, not lifetimes. Be grateful for what they taught you, and keep walking."],
+    ["Your health is your real wealth.","No job or money is worth losing it. Protect your sleep, your body and your peace."],
+    ["You can't pour from an empty cup.","Taking care of yourself isn't selfish. It's how you keep showing up for the people you love."],
+    ["Time is the one thing you never get back.","Spend it on people and things that truly matter to you."],
+    ["Every expert was once a beginner.","Being bad at something is the first step to being good at it. Give yourself permission to start."],
+  ],
+  motivation:[
+    ["Discipline is choosing what you want most over what you want now.","Every small choice today is a vote for the person you're becoming."],
+    ["Start where you are. Use what you have. Do what you can.","You don't need perfect conditions. You just need to begin.","Arthur Ashe"],
+    ["Doubt kills more dreams than failure ever will.","Failing teaches you something. Never trying teaches you nothing. Go for it."],
+    ["A year from now, you'll wish you had started today.","The best time was yesterday. The second best time is right now."],
+    ["Fall seven times, stand up eight.","Setbacks are part of the story, not the end of it. Get back up.","Japanese proverb"],
+    ["Small steps every day add up to big results.","1% better every day is 37 times better in a year. Don't underestimate small wins."],
+    ["Your only competition is who you were yesterday.","Stop measuring yourself against others. Just beat your old self."],
+    ["Hard choices, easy life. Easy choices, hard life.","Do the uncomfortable thing now so the future you can thank you."],
+    ["Stars can't shine without darkness.","This hard season is shaping you. Hold on — your moment is coming."],
+    ["Dream big. Start small. Act now.","Big goals are reached through tiny, consistent actions. Pick one and do it today."],
+  ],
+  mindset:[
+    ["Progress beats perfect","Done at 80% today is worth more than perfect someday. Ship it, learn, then improve it."],
+    ["Respond, don't react","When you feel the heat rising, take one slow breath before you speak. That pause is where wisdom lives."],
+    ["You are not your thoughts","A thought is just a visitor. Notice it, name it, and let it walk out the door."],
+    ["Shrink the problem","Too big to start? Ask: what's the smallest step I could take in the next five minutes?"],
+    ["Bad days aren't bad lives","One rough day is a chapter, not the whole book. Sleep on it — tomorrow looks different."],
+    ["Compare less, create more","Their highlight reel isn't your behind-the-scenes. Spend that energy building your own thing."],
+  ],
+  happiness:[
+    ["Collect small joys","Morning coffee, a good song, sunlight on your face. Happiness is mostly made of little things noticed."],
+    ["Write down three good things","Every night, list three things that went well. In a few weeks your brain starts looking for them."],
+    ["Go outside","Twenty minutes in nature can lift your mood more than an hour of scrolling. Leave the phone behind."],
+    ["Give it away","Buy a friend a coffee, send a kind message. Doing something for others is a reliable shortcut to feeling good."],
+    ["Plan something to look forward to","Even a small plan — a walk on Friday, a meal with friends — gives every day before it a little glow."],
+  ],
+  health:[
+    ["Sleep is the superpower","Same bedtime, dark room, no screens for the last 30 minutes. Almost everything gets easier when you're rested."],
+    ["Drink water first","Start the day with a full glass of water before coffee. Your body has been without it all night."],
+    ["Walk after you eat","A 10-minute walk after meals helps digestion, steadies energy and clears your head."],
+    ["Move a little, every day","You don't need a perfect workout. A walk, some stretching, taking the stairs — consistency wins."],
+    ["Breathe out longer","Inhale for 4, exhale for 6. Longer exhales tell your nervous system it's safe to calm down."],
+  ],
+  money:[
+    ["Pay yourself first","When money comes in, move a set amount to savings before you spend anything. Even 10% adds up fast."],
+    ["Wait 48 hours","Want something you don't need? Wait two days. If you still want it, buy it — guilt-free."],
+    ["Build a safety cushion","Aim to save 3 months of expenses. It turns emergencies into inconveniences."],
+    ["Know where it goes","Track every spend for one month. Just seeing the numbers changes your habits."],
+    ["Buy experiences","Trips, meals with friends, learning something new — memories keep their value longer than things."],
+  ],
+  friends:[
+    ["Listen to understand","Not to reply. Ask one more question than you normally would — people feel truly seen."],
+    ["Reach out first","Don't wait to be texted. Most people are hoping someone else will make the first move."],
+    ["Say the nice thing","If you think something kind about someone, tell them. It costs nothing and they may remember it for years."],
+    ["Choose your circle","You become like the people you spend time with. Spend it with those who make you better."],
+    ["Apologise without 'but'","A real sorry has no excuses attached. Own it, fix what you can, and move forward."],
+  ],
+  work:[
+    ["Do the hard thing first","Tackle your toughest task before lunch. The rest of the day feels lighter."],
+    ["One thing at a time","Multitasking is just switching badly. Close the tabs, silence the phone, finish one thing."],
+    ["Systems over goals","Goals set the direction, but daily habits get you there. Focus on what you do every day."],
+    ["Learn out loud","Share what you're learning. Teaching others is the fastest way to master something."],
+    ["Rest is part of the work","Breaks aren't laziness. Your best ideas often show up when you step away."],
+  ],
+  confidence:[
+    ["Action creates confidence","You don't wait to feel ready. You do the thing scared, and confidence shows up afterward."],
+    ["Talk to yourself like a friend","Would you say that to someone you love? Then don't say it to yourself."],
+    ["Stand tall","Shoulders back, chin up, take up space. Your body tells your mind how to feel."],
+    ["Keep a wins list","Write down every win, big or small. Read it on days you doubt yourself."],
+    ["It's okay to say no","Every 'no' to something that drains you is a 'yes' to what matters."],
+  ],
+};
+
+const THEMES = [
+  {id:"sunrise", swatch:"linear-gradient(135deg,#ffb88c,#e2633f)", ink:"#2a120a", soft:"rgba(42,18,10,.72)", draw(c,w,h){
+    let g=c.createLinearGradient(0,0,w,h); g.addColorStop(0,"#ffd6a5"); g.addColorStop(.55,"#ffad7a"); g.addColorStop(1,"#ef6b48");
+    c.fillStyle=g; c.fillRect(0,0,w,h);
+    c.fillStyle="rgba(255,255,255,.22)"; circle(c,w*.05,h*.95,230);
+    c.fillStyle="rgba(255,255,255,.12)"; circle(c,w*.05,h*.95,330);
+  }},
+  {id:"ocean", swatch:"linear-gradient(135deg,#7fe0d6,#1b6f9e)", ink:"#ffffff", soft:"rgba(255,255,255,.85)", draw(c,w,h){
+    let g=c.createLinearGradient(0,0,0,h); g.addColorStop(0,"#52c7c0"); g.addColorStop(1,"#0f4c7a");
+    c.fillStyle=g; c.fillRect(0,0,w,h);
+    for(let i=0;i<4;i++){ c.fillStyle=`rgba(255,255,255,${.07+i*.02})`; wave(c,w,h*(.78+i*.06),26+i*6,i); }
+  }},
+  {id:"midnight", swatch:"linear-gradient(135deg,#3a3f7a,#0d0f24)", ink:"#f6f1ff", soft:"rgba(246,241,255,.8)", draw(c,w,h){
+    let g=c.createLinearGradient(0,0,w,h); g.addColorStop(0,"#2b2f66"); g.addColorStop(1,"#0b0c1e");
+    c.fillStyle=g; c.fillRect(0,0,w,h);
+    let r=rng(7); for(let i=0;i<90;i++){ c.fillStyle=`rgba(255,255,255,${.25+r()*.6})`; circle(c,r()*w,r()*h*.95,r()*2.6+.6); }
+  }},
+  {id:"forest", swatch:"linear-gradient(135deg,#9bc59d,#1f4d36)", ink:"#f2f7ee", soft:"rgba(242,247,238,.82)", draw(c,w,h){
+    let g=c.createLinearGradient(0,0,0,h); g.addColorStop(0,"#3d7a58"); g.addColorStop(1,"#17392a");
+    c.fillStyle=g; c.fillRect(0,0,w,h);
+    c.fillStyle="rgba(255,255,255,.06)"; for(let i=0;i<6;i++){ leaf(c,w*(.1+i*.17),h*(.9-((i%2)*.05)),140+(i%3)*40,(i%2?-.4:.4)); }
+  }},
+  {id:"paper", swatch:"linear-gradient(135deg,#fffaf0,#e9dfcd)", ink:"#1f1b16", soft:"rgba(31,27,22,.72)", draw(c,w,h){
+    c.fillStyle="#f8f2e6"; c.fillRect(0,0,w,h);
+    c.fillStyle="#e2633f"; c.fillRect(0,0,w,18);
+    c.font="700 520px Fraunces"; c.fillStyle="rgba(226,99,63,.12)"; c.textBaseline="alphabetic"; c.fillText("”",w-330,h+170);
+  }},
+  {id:"lilac", swatch:"linear-gradient(135deg,#f5d0fe,#8b5cf6)", ink:"#1e0f33", soft:"rgba(30,15,51,.72)", draw(c,w,h){
+    let g=c.createLinearGradient(0,h,w,0); g.addColorStop(0,"#c4b5fd"); g.addColorStop(.6,"#e9d5ff"); g.addColorStop(1,"#fbcfe8");
+    c.fillStyle=g; c.fillRect(0,0,w,h);
+    c.fillStyle="rgba(255,255,255,.35)"; circle(c,w*.1,h*.1,180); circle(c,w*.95,h*.92,240);
+  }},
+];
+
+function circle(c,x,y,r){c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();}
+function wave(c,w,y,a,ph){c.beginPath();c.moveTo(0,y);for(let x=0;x<=w;x+=10)c.lineTo(x,y+Math.sin(x/120+ph*1.3)*a);c.lineTo(w,1e4);c.lineTo(0,1e4);c.closePath();c.fill();}
+function leaf(c,x,y,s,rot){c.save();c.translate(x,y);c.rotate(rot);c.beginPath();c.moveTo(0,0);c.quadraticCurveTo(s*.6,-s*.5,0,-s*1.6);c.quadraticCurveTo(-s*.6,-s*.5,0,0);c.fill();c.restore();}
+function rng(s){return()=>{s=(s*9301+49297)%233280;return s/233280;}}
+
+// ---- state ----
+const state = { topic:"all", theme:0, tip:null, history:[] };
+try{ const t=localStorage.getItem("lw-theme"); if(t!==null) state.theme=+t%THEMES.length; }catch(e){}
+
+const cv=document.getElementById("cv"), ctx=cv.getContext("2d");
+
+function wrap(c,text,maxW){
+  const words=text.split(/\s+/), lines=[]; let line="";
+  for(const w of words){ const t=line?line+" "+w:w; if(c.measureText(t).width>maxW && line){lines.push(line);line=w;} else line=t; }
+  if(line) lines.push(line); return lines;
+}
+function fit(c,text,font,maxW,maxH,start,min,lh){
+  for(let s=start;s>=min;s-=2){ c.font=font.replace("{s}",s); const L=wrap(c,text,maxW); if(L.length*s*lh<=maxH) return {size:s,lines:L}; }
+  c.font=font.replace("{s}",min); return {size:min,lines:wrap(c,text,maxW)};
+}
+
+// ---- animation + graphics ----
+const LOOP=5, TAU=Math.PI*2;
+let t0=performance.now();
+const reduceMotion=matchMedia("(prefers-reduced-motion: reduce)").matches;
+let layoutCache={key:null};
+
+function star4(c,x,y,r){c.beginPath();for(let i=0;i<8;i++){const a=i*Math.PI/4-Math.PI/2,rr=i%2?r*.32:r;c.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr);}c.closePath();c.fill();}
+function heartPath(c,s){c.beginPath();c.moveTo(0,s*.35);c.bezierCurveTo(-s*1.1,-s*.35,-s*.55,-s*1.05,0,-s*.5);c.bezierCurveTo(s*.55,-s*1.05,s*1.1,-s*.35,0,s*.35);c.closePath();}
+function glow(c,x,y,r,col){const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,col);g.addColorStop(1,"rgba(255,255,255,0)");c.fillStyle=g;circle(c,x,y,r);}
+
+const GRAPHICS={
+  happiness(c,ph){ // smiling sun
+    glow(c,0,0,170,"rgba(255,214,102,.55)");
+    c.save(); c.rotate(TAU/12*ph); c.fillStyle="#ffb703";
+    for(let i=0;i<12;i++){ c.rotate(TAU/12); const l=1+.12*Math.sin(TAU*(ph*2+i/6)); roundRect(c,-8,-82-34*l,16,34*l,8); c.fill(); }
+    c.restore();
+    const p=1+.04*Math.sin(TAU*ph*2);
+    const g=c.createLinearGradient(0,-70,0,70); g.addColorStop(0,"#ffe08a"); g.addColorStop(1,"#f4a261");
+    c.fillStyle=g; circle(c,0,0,68*p);
+    c.fillStyle="#7a3b00"; const blink=Math.abs(Math.sin(TAU*ph))<.08?.2:1;
+    c.save(); c.scale(1,blink); circle(c,-22,-12/blink,7); c.restore(); c.save(); c.scale(1,blink); circle(c,22,-12/blink,7); c.restore();
+    c.strokeStyle="#7a3b00"; c.lineWidth=6; c.lineCap="round"; c.beginPath(); c.arc(0,6,24,.2*Math.PI,.8*Math.PI); c.stroke();
+    c.fillStyle="rgba(239,71,111,.35)"; circle(c,-40,14,10); circle(c,40,14,10);
+  },
+  money(c,ph){ // coin stack + spinning coin
+    const coin=(x,y)=>{ c.fillStyle="#d99a00"; c.beginPath(); c.ellipse(x,y+10,68,22,0,0,TAU); c.fill(); c.fillRect(x-68,y,136,10);
+      c.fillStyle="#ffcf3f"; c.beginPath(); c.ellipse(x,y,68,22,0,0,TAU); c.fill(); c.strokeStyle="rgba(150,90,0,.5)"; c.lineWidth=3; c.beginPath(); c.ellipse(x,y,48,14,0,0,TAU); c.stroke(); };
+    for(let i=0;i<4;i++) coin(-10,95-i*20);
+    const sx=Math.cos(TAU*ph*2), y=-55+12*Math.sin(TAU*ph);
+    glow(c,20,y,110,"rgba(255,207,63,.45)");
+    c.save(); c.translate(20,y); c.scale(Math.max(.08,Math.abs(sx)),1);
+    c.fillStyle=sx>0?"#ffcf3f":"#f0b400"; circle(c,0,0,58); c.strokeStyle="#c68400"; c.lineWidth=6; c.beginPath(); c.arc(0,0,42,0,TAU); c.stroke();
+    c.fillStyle="#c68400"; star4(c,0,0,24); c.restore();
+    c.fillStyle="#fff"; [[-90,-90,0],[100,-20,.33],[-70,10,.66]].forEach(([x,yy,o])=>{const s=Math.max(0,Math.sin(TAU*(ph*2+o)));c.globalAlpha=s;star4(c,x,yy,16*s+2);}); c.globalAlpha=1;
+  },
+  health(c,ph){ // beating heart with pulse rings
+    const beat=ph*5%1, b=Math.pow(Math.max(0,Math.sin(TAU*ph*5)),6);
+    c.strokeStyle="#ef476f"; c.lineWidth=5; c.globalAlpha=.5*(1-beat); c.beginPath(); c.arc(0,0,70+80*beat,0,TAU); c.stroke(); c.globalAlpha=1;
+    c.save(); c.scale(1+.12*b,1+.12*b); c.translate(0,18);
+    const g=c.createLinearGradient(0,-90,0,40); g.addColorStop(0,"#ff7a9a"); g.addColorStop(1,"#e63462");
+    c.fillStyle=g; heartPath(c,100); c.fill();
+    c.fillStyle="rgba(255,255,255,.55)"; c.beginPath(); c.ellipse(-38,-48,14,22,-.6,0,TAU); c.fill();
+    c.strokeStyle="#fff"; c.lineWidth=7; c.lineJoin="round"; c.lineCap="round"; c.beginPath();
+    c.moveTo(-60,-20); c.lineTo(-25,-20); c.lineTo(-12,-48); c.lineTo(4,8); c.lineTo(16,-20); c.lineTo(60,-20); c.stroke();
+    c.restore();
+  },
+  friends(c,ph){ // two hearts + floating hearts
+    for(let i=0;i<4;i++){ const q=(ph+i/4)%1; c.save(); c.globalAlpha=Math.sin(Math.PI*q)*.8; c.translate(-90+i*60+12*Math.sin(TAU*(q+i/4)),110-q*230); c.fillStyle=i%2?"#ff8fab":"#ffb703"; heartPath(c,22); c.fill(); c.restore(); }
+    const sw=Math.sin(TAU*ph)*.12;
+    c.save(); c.translate(-34,10); c.rotate(-.18+sw); c.fillStyle="#ff6b6b"; heartPath(c,78); c.fill(); c.restore();
+    c.save(); c.translate(38,0); c.rotate(.18-sw); c.fillStyle="#ff9f43"; c.globalAlpha=.92; heartPath(c,78); c.fill(); c.restore();
+    c.fillStyle="rgba(255,255,255,.6)"; c.beginPath(); c.ellipse(-62,-30,9,15,-.6,0,TAU); c.fill();
+  },
+  work(c,ph){ // rocket with flame & speed lines
+    c.strokeStyle="rgba(255,255,255,.7)"; c.lineCap="round"; c.lineWidth=5;
+    for(let i=0;i<4;i++){ const q=(ph*2+i/4)%1; c.globalAlpha=1-q; const x=60-q*220+i*18, y=-90+q*220+i*30; c.beginPath(); c.moveTo(x,y); c.lineTo(x-40,y+40); c.stroke(); } c.globalAlpha=1;
+    c.save(); c.translate(0,8*Math.sin(TAU*ph*2)); c.rotate(Math.PI/4);
+    const f=1+.25*Math.sin(TAU*ph*10)+.1*Math.sin(TAU*ph*7);
+    c.fillStyle="#ffb703"; c.beginPath(); c.moveTo(-18,62); c.quadraticCurveTo(0,62+70*f,18,62); c.fill();
+    c.fillStyle="#ff6b35"; c.beginPath(); c.moveTo(-11,62); c.quadraticCurveTo(0,62+42*f,11,62); c.fill();
+    c.fillStyle="#e63946"; c.beginPath(); c.moveTo(-30,20); c.lineTo(-58,72); c.lineTo(-24,60); c.closePath(); c.fill();
+    c.beginPath(); c.moveTo(30,20); c.lineTo(58,72); c.lineTo(24,60); c.closePath(); c.fill();
+    c.fillStyle="#f1f5f9"; c.beginPath(); c.moveTo(0,-100); c.bezierCurveTo(48,-60,40,40,30,64); c.lineTo(-30,64); c.bezierCurveTo(-40,40,-48,-60,0,-100); c.fill();
+    c.fillStyle="#e63946"; c.beginPath(); c.moveTo(0,-100); c.bezierCurveTo(24,-82,32,-66,36,-56); c.lineTo(-36,-56); c.bezierCurveTo(-32,-66,-24,-82,0,-100); c.fill();
+    c.fillStyle="#1d4ed8"; circle(c,0,-12,20); c.fillStyle="#93c5fd"; circle(c,0,-12,13); c.fillStyle="rgba(255,255,255,.8)"; circle(c,-5,-17,4);
+    c.restore();
+  },
+  confidence(c,ph){ // crown with twinkles
+    glow(c,0,0,160,"rgba(255,215,0,.35)");
+    c.save(); c.translate(0,6*Math.sin(TAU*ph));
+    const g=c.createLinearGradient(0,-80,0,60); g.addColorStop(0,"#ffe066"); g.addColorStop(1,"#f4a300");
+    c.fillStyle=g; c.beginPath(); c.moveTo(-95,50); c.lineTo(-105,-55); c.lineTo(-50,-5); c.lineTo(0,-80); c.lineTo(50,-5); c.lineTo(105,-55); c.lineTo(95,50); c.closePath(); c.fill();
+    c.fillStyle="#d48a00"; roundRect(c,-98,42,196,30,10); c.fill();
+    c.fillStyle="#e63946"; circle(c,0,10,14); c.fillStyle="#3a86ff"; circle(c,-55,25,10); circle(c,55,25,10);
+    c.fillStyle="#fff7cc"; circle(c,-105,-58,9); circle(c,0,-84,10); circle(c,105,-58,9);
+    c.restore();
+    c.fillStyle="#fff"; [[-120,-100,0],[125,-110,.25],[130,40,.5],[-130,50,.75]].forEach(([x,y,o])=>{const s=Math.max(0,Math.sin(TAU*(ph*2+o)));c.globalAlpha=s;star4(c,x,y,22*s+2);}); c.globalAlpha=1;
+  },
+  mindset(c,ph){ // glowing light bulb
+    const p=.5+.5*Math.sin(TAU*ph*2);
+    glow(c,0,-20,150+20*p,`rgba(255,230,120,${.35+.3*p})`);
+    c.strokeStyle=`rgba(255,200,60,${.5+.5*p})`; c.lineWidth=7; c.lineCap="round";
+    for(let i=0;i<7;i++){ const a=-Math.PI+i*Math.PI/6; c.beginPath(); c.moveTo(Math.cos(a)*100,-20+Math.sin(a)*100); c.lineTo(Math.cos(a)*(122+8*p),-20+Math.sin(a)*(122+8*p)); c.stroke(); }
+    const g=c.createRadialGradient(-15,-40,5,0,-20,80); g.addColorStop(0,"#fffbe0"); g.addColorStop(1,"#ffd23f");
+    c.fillStyle=g; c.beginPath(); c.arc(0,-20,72,Math.PI*.78,Math.PI*2.22); c.lineTo(28,62); c.lineTo(-28,62); c.closePath(); c.fill();
+    c.strokeStyle="#c98a00"; c.lineWidth=5; c.beginPath(); c.moveTo(-18,50); c.lineTo(-18,10); c.lineTo(-8,-10); c.lineTo(2,10); c.lineTo(12,-10); c.lineTo(18,10); c.lineTo(18,50); c.stroke();
+    c.fillStyle="#64748b"; roundRect(c,-30,62,60,16,6); c.fill(); c.fillStyle="#475569"; roundRect(c,-26,80,52,14,6); c.fill(); roundRect(c,-16,96,32,12,6); c.fill();
+  },
+  lessons(c,ph){ // open book with rising sparkles
+    for(let i=0;i<5;i++){ const q=(ph+i/5)%1; c.globalAlpha=Math.sin(Math.PI*q); c.fillStyle=i%2?"#ffd166":"#fff"; star4(c,-60+i*30+10*Math.sin(TAU*(q*2+i/5)),40-q*190,10+6*Math.sin(Math.PI*q)); } c.globalAlpha=1;
+    c.save(); c.translate(0,50);
+    c.fillStyle="#8d5a3b"; c.beginPath(); c.moveTo(-130,-10); c.lineTo(0,10); c.lineTo(130,-10); c.lineTo(130,30); c.lineTo(0,50); c.lineTo(-130,30); c.closePath(); c.fill();
+    const lift=6*Math.sin(TAU*ph);
+    c.fillStyle="#fffaf0"; c.beginPath(); c.moveTo(0,36); c.quadraticCurveTo(-60,0-lift,-122,16); c.lineTo(-122,-70); c.quadraticCurveTo(-60,-90-lift,0,-50); c.closePath(); c.fill();
+    c.fillStyle="#fff3dc"; c.beginPath(); c.moveTo(0,36); c.quadraticCurveTo(60,0+lift,122,16); c.lineTo(122,-70); c.quadraticCurveTo(60,-90+lift,0,-50); c.closePath(); c.fill();
+    c.strokeStyle="rgba(120,90,60,.35)"; c.lineWidth=4; c.lineCap="round";
+    for(let i=0;i<3;i++){ c.beginPath(); c.moveTo(-100,-50+i*20); c.quadraticCurveTo(-55,-62+i*20-lift,-15,-38+i*20); c.stroke(); c.beginPath(); c.moveTo(15,-38+i*20); c.quadraticCurveTo(55,-62+i*20+lift,100,-50+i*20); c.stroke(); }
+    c.strokeStyle="rgba(120,90,60,.5)"; c.beginPath(); c.moveTo(0,-50); c.lineTo(0,36); c.stroke();
+    c.restore();
+  },
+  motivation(c,ph){ // flickering flame + embers
+    for(let i=0;i<5;i++){ const q=(ph*2+i/5)%1; c.globalAlpha=1-q; c.fillStyle="#ffb703"; circle(c,-40+i*20+14*Math.sin(TAU*(q+i/5)),60-q*200,5*(1-q)+2); } c.globalAlpha=1;
+    glow(c,0,20,150,"rgba(255,140,40,.4)");
+    const layer=(h,w,col,k)=>{ const sway=10*Math.sin(TAU*(ph*3+k))+5*Math.sin(TAU*(ph*7+k)), hh=h*(1+.07*Math.sin(TAU*(ph*4+k)));
+      c.fillStyle=col; c.beginPath(); c.moveTo(0,100); c.bezierCurveTo(-w,100,-w*1.05,20,-w*.45,-hh*.3); c.quadraticCurveTo(-w*.2,-hh*.6,sway,-hh);
+      c.quadraticCurveTo(w*.35,-hh*.5,w*.55,-hh*.25); c.bezierCurveTo(w*1.05,20,w,100,0,100); c.fill(); };
+    layer(130,90,"#ff5a1f",0); layer(95,62,"#ff9f1c",.3); layer(58,36,"#ffe066",.6); layer(26,18,"#fffbe6",.1);
+  },
+  custom(c,ph,tip){ // emoji with sparkles
+    glow(c,0,0,150,"rgba(255,255,255,.45)");
+    c.save(); c.translate(0,10*Math.sin(TAU*ph)); c.rotate(.06*Math.sin(TAU*ph*2));
+    c.font="150px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif"; c.textAlign="center"; c.textBaseline="middle"; c.fillText(tip.emoji||"💡",0,6);
+    c.restore();
+    c.fillStyle="#fff"; [[-115,-90,0],[120,-70,.33],[100,95,.66]].forEach(([x,y,o])=>{const s=Math.max(0,Math.sin(TAU*(ph*2+o)));c.globalAlpha=s;star4(c,x,y,20*s+2);}); c.globalAlpha=1;
+  },
+};
+
+function particles(c,ph,th,W,H){
+  const r=rng(3); c.fillStyle=th.ink;
+  for(let i=0;i<16;i++){ const x=r()*W, y0=r()*H, sz=3+r()*6, k=1+Math.floor(r()*2);
+    const y=((y0-ph*H*k)%H+H)%H; c.globalAlpha=.10+.08*Math.sin(TAU*(ph*k+i/16)); circle(c,x+12*Math.sin(TAU*(ph+i/7)),y,sz); }
+  c.globalAlpha=1;
+}
+
+function layoutFor(tip){
+  const key=[tip.headline,tip.tip,tip.by,tip.quote].join("|");
+  if(layoutCache.key===key) return layoutCache;
+  const W=1080,H=1350,P=96,maxW=W-P*2;
+  const headText = tip.quote ? "“"+tip.headline.replace(/[.]$/,"")+".”" : tip.headline;
+  const head=fit(ctx,headText,"700 {s}px Fraunces",maxW,tip.quote?470:400,tip.quote?92:112,50,1.12);
+  let y=P+270+head.lines.length*head.size*1.12+(tip.by?62:0)+88;
+  const body=fit(ctx,tip.tip,"500 {s}px 'DM Sans'",maxW,H-y-200,48,32,1.42);
+  layoutCache={key,head,body};
+  return layoutCache;
+}
+
+function render(t){
+  if(t===undefined) t=reduceMotion?1.2:(performance.now()-t0)/1000;
+  const ph=(t%LOOP)/LOOP;
+  const W=1080,H=1350,P=96, th=THEMES[state.theme], tip=state.tip;
+  ctx.save(); ctx.clearRect(0,0,W,H); th.draw(ctx,W,H); ctx.restore();
+  ctx.save(); particles(ctx,ph,th,W,H); ctx.restore();
+  if(!tip) return;
+  const L=layoutFor(tip);
+
+  // graphic (top-right)
+  ctx.save(); ctx.translate(W-P-125,P+135); ctx.scale(1.05,1.05);
+  (GRAPHICS[tip.gid]||GRAPHICS.custom)(ctx,ph,tip);
+  ctx.restore();
+  ctx.textBaseline="top"; ctx.textAlign="left"; ctx.globalAlpha=1;
+
+  // label pill
+  const label=(tip.emoji?tip.emoji+"  ":"")+tip.topicName.toUpperCase();
+  ctx.font="700 30px 'DM Sans'"; const lw=ctx.measureText(label).width+56;
+  ctx.fillStyle=th.ink==="#ffffff"||th.ink.startsWith("#f")?"rgba(255,255,255,.18)":"rgba(0,0,0,.08)";
+  roundRect(ctx,P,P+40,lw,64,32); ctx.fill();
+  ctx.fillStyle=th.ink; ctx.fillText(label,P+28,P+57);
+
+  // headline
+  const head=L.head;
+  let y=P+270;
+  ctx.font=`700 ${head.size}px Fraunces`; ctx.fillStyle=th.ink;
+  head.lines.forEach(l=>{ctx.fillText(l,P,y); y+=head.size*1.12;});
+  if(tip.by){ y+=18; ctx.font="italic 500 38px Fraunces"; ctx.fillStyle=th.soft; ctx.fillText("— "+tip.by,P,y); y+=44; }
+
+  // accent rule
+  y+=34; ctx.fillStyle=th.ink; ctx.globalAlpha=.85; roundRect(ctx,P,y,110,10,5); ctx.fill(); ctx.globalAlpha=1; y+=54;
+
+  // body
+  const body=L.body;
+  ctx.font=`500 ${body.size}px 'DM Sans'`; ctx.fillStyle=th.soft;
+  body.lines.forEach(l=>{ctx.fillText(l,P,y); y+=body.size*1.42;});
+
+  // footer
+  const name=(state.name||"").trim()||"Shanez";
+  ctx.globalAlpha=.9;
+  if(name){
+    ctx.fillStyle=th.soft; ctx.font="600 28px 'DM Sans'";
+    ctx.fillText("— "+name,P,H-P-36);
+    ctx.textAlign="right"; ctx.font="500 26px 'DM Sans'"; ctx.fillStyle=th.soft;
+    ctx.fillText("✦ Little Wisdom",W-P,H-P-36);
+  } else {
+    ctx.font="600 30px 'DM Sans'"; ctx.fillStyle=th.soft;
+    ctx.fillText("✦ Little Wisdom",P,H-P-30);
+    ctx.textAlign="right"; ctx.font="500 28px 'DM Sans'";
+    ctx.fillText("pass it on to a friend",W-P,H-P-28);
+  }
+  ctx.globalAlpha=1; ctx.textAlign="left";
+}
+function roundRect(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+
+function pickTip(){
+  const ids = state.topic==="all" ? Object.keys(TIPS) : [state.topic];
+  const pool=[]; ids.forEach(id=>TIPS[id].forEach((t,i)=>pool.push({id,i,t})));
+  let options=pool.filter(p=>!state.history.includes(p.id+p.i));
+  if(!options.length){ state.history=[]; options=pool; }
+  const p=options[Math.floor(Math.random()*options.length)];
+  state.history.push(p.id+p.i); if(state.history.length>20) state.history.shift();
+  const topic=TOPICS.find(t=>t.id===p.id);
+  const isQuote = p.id==="lessons"||p.id==="motivation";
+  addTip({gid:p.id, headline:p.t[0], tip:p.t[1], by:p.t[2]||"", quote:isQuote, emoji:topic.emoji, topicName:topic.label.replace(/^\S+\s/,"")});
+}
+
+// ---- deck + swipe ----
+const deck=[]; let pos=-1;
+function addTip(tip){ deck.splice(pos+1); deck.push(tip); if(deck.length>50) deck.shift(); pos=deck.length-1; state.tip=tip; }
+let sliding=false;
+function slide(dir,change){
+  if(sliding) return; sliding=true;
+  cv.style.transition="transform .22s ease-in, opacity .22s"; cv.style.transform=`translateX(${-dir*110}%) rotate(${-dir*8}deg)`; cv.style.opacity="0";
+  setTimeout(()=>{
+    change();
+    cv.style.transition="none"; cv.style.transform=`translateX(${dir*110}%) rotate(${dir*8}deg)`; void cv.offsetWidth;
+    cv.style.transition="transform .28s cubic-bezier(.2,.8,.2,1), opacity .28s"; cv.style.transform="none"; cv.style.opacity="1";
+    setTimeout(()=>{ sliding=false; },280);
+  },220);
+}
+function nextCard(){ slide(1,()=>{ if(pos<deck.length-1){ pos++; state.tip=deck[pos]; } else pickTip(); }); }
+function prevCard(){
+  if(pos<=0){ snapBack(); toast("This is your first card — swipe left for more"); return; }
+  slide(-1,()=>{ pos--; state.tip=deck[pos]; });
+}
+function snapBack(){ cv.style.transition="transform .25s cubic-bezier(.2,.8,.2,1)"; cv.style.transform="none"; }
+
+// ---- UI ----
+const chips=document.getElementById("chips");
+TOPICS.forEach(t=>{
+  const b=document.createElement("button"); b.className="chip"; b.textContent=t.label;
+  b.setAttribute("aria-pressed",t.id===state.topic);
+  b.onclick=()=>{ state.topic=t.id; [...chips.children].forEach(x=>x.setAttribute("aria-pressed",x===b)); slide(1,pickTip); };
+  chips.appendChild(b);
+});
+const styles=document.getElementById("styles");
+THEMES.forEach((t,i)=>{
+  const b=document.createElement("button"); b.className="sw"; b.style.background=t.swatch; b.title=t.id; b.setAttribute("aria-label",t.id+" style");
+  b.setAttribute("aria-pressed",i===state.theme);
+  b.onclick=()=>{ state.theme=i; [...styles.children].forEach(x=>x.setAttribute("aria-pressed",x===b)); try{localStorage.setItem("lw-theme",i)}catch(e){} render(); };
+  styles.appendChild(b);
+});
+
+document.getElementById("newBtn").onclick=nextCard;
+
+const stageEl=document.querySelector(".stage");
+let sx=null, sy=null, horiz=null;
+stageEl.addEventListener("pointerdown",e=>{ if(sliding) return; sx=e.clientX; sy=e.clientY; horiz=null; cv.style.transition="none"; });
+stageEl.addEventListener("pointermove",e=>{
+  if(sx===null) return; const dx=e.clientX-sx, dy=e.clientY-sy;
+  if(horiz===null && (Math.abs(dx)>8||Math.abs(dy)>8)){ horiz=Math.abs(dx)>Math.abs(dy); if(horiz) try{stageEl.setPointerCapture(e.pointerId)}catch(_){} }
+  if(horiz) cv.style.transform=`translateX(${dx}px) rotate(${dx/40}deg)`;
+});
+function endDrag(e){
+  if(sx===null) return; const dx=e.clientX-sx; const was=horiz; sx=null; horiz=null;
+  if(!was){ snapBack(); return; }
+  if(dx<-60) nextCard(); else if(dx>60) prevCard(); else snapBack();
+}
+stageEl.addEventListener("pointerup",endDrag);
+stageEl.addEventListener("pointercancel",e=>{ sx=null; horiz=null; snapBack(); });
+document.addEventListener("keydown",e=>{ if(e.target.matches("input,textarea")) return; if(e.key==="ArrowRight") nextCard(); if(e.key==="ArrowLeft") prevCard(); });
+
+const nameInput=document.getElementById("nameInput");
+try{ state.name=localStorage.getItem("lw-name")||"Shanez"; }catch(e){ state.name="Shanez"; }
+nameInput.value=state.name;
+nameInput.oninput=()=>{ state.name=nameInput.value; try{localStorage.setItem("lw-name",state.name)}catch(e){} render(); };
+
+const toastEl=document.getElementById("toast"); let tt;
+function toast(m){ toastEl.textContent=m; toastEl.classList.add("on"); clearTimeout(tt); tt=setTimeout(()=>toastEl.classList.remove("on"),2600); }
+
+document.getElementById("copyBtn").onclick=async()=>{
+  if(!state.tip) return;
+  const t=state.tip, h=t.quote?`“${t.headline}”${t.by?" — "+t.by:""}`:t.headline;
+  const txt=`${t.emoji||"✦"} ${h}\n\n${t.tip}\n\n— ${(state.name||"").trim()||"Shanez"}`;
+  try{ await navigator.clipboard.writeText(txt); toast("Copied — paste it anywhere"); }catch(e){ toast("Couldn't copy here"); }
+};
+
+let downloads=null;
+const saveBtn=document.getElementById("saveBtn");
+
+// Save through Claude's save prompt when running inside Claude; otherwise
+// use the phone's share sheet, then fall back to a normal download.
+async function deliver(blob,filename,okMsg){
+  if(downloads){
+    try{ const r=await downloads.save({filename,data:blob}); if(r.status==="saved") toast(okMsg); }
+    catch(e){ if(e&&e.code==="declined") return; toast(e&&e.code==="rate_limited"?"One moment — try again":"Couldn't save here"); }
+    return;
+  }
+  try{
+    const file=new File([blob],filename,{type:blob.type});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){ await navigator.share({files:[file],title:"Little Wisdom"}); return; }
+  }catch(e){ if(e&&e.name==="AbortError") return; }
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=filename;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+  toast(okMsg);
+}
+
+saveBtn.onclick=async()=>{
+  const blob=await new Promise(r=>cv.toBlob(r,"image/png"));
+  deliver(blob,fileBase()+".png","Saved! Now send it to a friend 💌");
+};
+
+// ---- animated video ----
+const videoBtn=document.getElementById("videoBtn");
+const VTYPES=['video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9','video/webm'];
+const vType=(window.MediaRecorder&&cv.captureStream)?VTYPES.find(t=>{try{return MediaRecorder.isTypeSupported(t)}catch(e){return false}}):null;
+function hideVideo(){ videoBtn.classList.add("hidden"); document.getElementById("copyBtn").classList.remove("full"); }
+if(!vType) hideVideo();
+let readyVideo=null;
+videoBtn.onclick=async()=>{
+  if(readyVideo){ const v=readyVideo; readyVideo=null; videoBtn.textContent="🎬 Save video"; deliver(v.blob,v.name,"Video saved! Post it or send it 🎬"); return; }
+  videoBtn.disabled=true; loading.textContent="Making your video… 5s"; loading.classList.add("on");
+  let blob;
+  try{
+    const stream=cv.captureStream(30);
+    const rec=new MediaRecorder(stream,{mimeType:vType,videoBitsPerSecond:6e6});
+    const chunks=[]; rec.ondataavailable=e=>{ if(e.data&&e.data.size) chunks.push(e.data); };
+    const done=new Promise(r=>rec.onstop=r);
+    t0=performance.now(); rec.start(250);
+    for(let s=LOOP;s>0;s--){ loading.textContent=`Making your video… ${s}s`; await new Promise(r=>setTimeout(r,1000)); }
+    rec.stop(); await done; stream.getTracks().forEach(tr=>tr.stop());
+    blob=new Blob(chunks,{type:vType.split(";")[0]});
+  }catch(e){ toast("Video isn't supported here — try Save picture"); }
+  finally{ loading.classList.remove("on"); loading.textContent="Thinking of something good…"; videoBtn.disabled=false; }
+  if(!blob||!blob.size) return;
+  const name=fileBase()+"."+(vType.includes("mp4")?"mp4":"webm");
+  if(downloads){ deliver(blob,name,"Video saved! Post it or send it 🎬"); return; }
+  // Outside Claude the share sheet needs a fresh tap, so hand the video to the button.
+  readyVideo={blob,name}; videoBtn.textContent="📤 Share video"; toast("Your video is ready — tap Share video");
+};
+function fileBase(){ return "little-wisdom-"+state.tip.headline.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40); }
+
+function loop(){ render(); requestAnimationFrame(loop); }
+
+// ---- Ask Claude ----
+let sample=null;
+const askBtn=document.getElementById("askBtn"), loading=document.getElementById("loading");
+askBtn.onclick=async()=>{
+  const s=document.getElementById("situation").value.trim();
+  if(!s){ toast("Write a line about what's on your mind"); return; }
+  askBtn.disabled=true; loading.classList.add("on");
+  try{
+    const prompt=`You are a warm, wise friend giving short, practical life advice that will be printed on a shareable picture card.
+The person wrote: """${s}"""
+Choose the best form: practical advice, an original life-lesson quote, or an original motivational line.
+Reply ONLY with JSON: {"kind": "advice"|"quote", "graphic": one of "happiness"|"money"|"health"|"friends"|"work"|"confidence"|"mindset"|"lessons"|"motivation" (the picture that best fits), "headline": string (advice: 2-7 punchy words; quote: an ORIGINAL quote of 5-16 words, not a famous one), "tip": string (18-38 words, kind, concrete, one actionable step), "emoji": string (one emoji), "topic": string (1-2 words, e.g. "Friendship", "Motivation")}.
+No medical, legal or financial specifics. If they mention self-harm or crisis, gently encourage reaching out to someone they trust or a local helpline.`;
+    const out=await sample.json(prompt,{modelTier:"quick"});
+    if(!out||!out.headline||!out.tip) throw new Error("bad");
+    addTip({headline:String(out.headline).slice(0,60), tip:String(out.tip).slice(0,260), quote:out.kind==="quote", by:"", gid:GRAPHICS[out.graphic]?out.graphic:"custom", emoji:out.emoji||"💡", topicName:String(out.topic||"For you").slice(0,22)});
+    render();
+    document.querySelector(".stage").scrollIntoView({behavior:"smooth",block:"start"});
+  }catch(e){
+    if(e&&e.code==="not_granted"){ document.getElementById("ask").classList.add("hidden"); toast("Advice from Claude isn't available here"); }
+    else if(e&&e.code==="rate_limited") toast("Too many requests — wait a minute");
+    else toast("Couldn't get advice right now — try again");
+  }finally{ askBtn.disabled=false; loading.classList.remove("on"); }
+};
+
+// ---- boot ----
+(async()=>{
+  try{ await Promise.all([document.fonts.load("700 80px Fraunces"),document.fonts.load("500 40px 'DM Sans'"),document.fonts.load("700 30px 'DM Sans'")]); }catch(e){}
+  layoutCache={key:null};
+  pickTip(); loop();
+})();
+try{ document.fonts.addEventListener("loadingdone",()=>{ layoutCache={key:null}; }); }catch(e){}
+(async()=>{
+  if(!window.claude||!claude.use) return;
+  try{ downloads=await claude.use("downloads"); }catch(e){}
+  try{ sample=await claude.use("sample"); }catch(e){}
+  if(sample) document.getElementById("ask").classList.remove("hidden");
+})();
+</script>
+</body>
+</html>
