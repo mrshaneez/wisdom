@@ -5,7 +5,7 @@ Life tips, life-lesson quotes and motivation as picture cards you can share with
 ## Features
 
 - **9 topics:** Life lessons, Motivation, Mindset, Happiness, Health, Money, Friends & love, Work & goals, Confidence
-- **Animated graphics** that match each topic (sun, flame, book, coin, heart, rocket, crown, light bulb)
+- **Animated characters** acting out each topic: jumping for joy, saving coins in a piggy bank, jogging, friends holding hands, working at a laptop, a caped hero, meditating, reading, weightlifting
 - **6 card styles:** Sunrise, Ocean, Midnight, Forest, Paper, Lilac
 - **Swipe** left for the next card, right to go back (arrow keys work on desktop)
 - **Your name** on every card (defaults to "Shanez")
