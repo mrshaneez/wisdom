@@ -5,8 +5,8 @@ Life tips, life-lesson quotes and motivation as picture cards you can share with
 ## Features
 
 - **9 topics:** Life lessons, Motivation, Mindset, Happiness, Health, Money, Friends & love, Work & goals, Confidence
-- **Full-card manga line-art characters** behind the text: close-up portraits with wind-blown hair, blinking and breathing, plus matching props (rose crown and petals, flipping book, flame, light bulb, spinning coin, checklist)
-- **6 card styles:** Sunrise, Ocean, Midnight, Forest, Paper, Lilac
+- **Minimalist poster scenes** in tall story format (9:16): silhouette figures in calm landscapes (samurai in a meadow, monk on a lake, a climber on a summit, friends at sunset and more) with swaying grass, drifting mist, flying birds and falling petals
+- **6 colour moods:** Dawn, Dusk, Night, Mist, Sakura, Ink
 - **Swipe** left for the next card, right to go back (arrow keys work on desktop)
 - **Your name** on every card (defaults to "Shanez")
 - **Save picture** (PNG) or **Save video** (5-second animated MP4/WebM), which opens the phone's share sheet
