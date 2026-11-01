@@ -5,7 +5,7 @@ Life tips, life-lesson quotes and motivation as picture cards you can share with
 ## Features
 
 - **9 topics:** Life lessons, Motivation, Mindset, Happiness, Health, Money, Friends & love, Work & goals, Confidence
-- **Animated manga-style characters** in black-and-white line art: hair blowing in the wind, blinking, breathing, with matching props (flower crown and petals, flipping book, flame, light bulb, coin, checklist)
+- **Full-card manga line-art characters** behind the text: close-up portraits with wind-blown hair, blinking and breathing, plus matching props (rose crown and petals, flipping book, flame, light bulb, spinning coin, checklist)
 - **6 card styles:** Sunrise, Ocean, Midnight, Forest, Paper, Lilac
 - **Swipe** left for the next card, right to go back (arrow keys work on desktop)
 - **Your name** on every card (defaults to "Shanez")
